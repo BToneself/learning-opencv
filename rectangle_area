@@ -1,0 +1,22 @@
+def rectangle_area(image):
+    image_blur = cv.blur(image, (3, 3))
+    image_gaussian = cv.GaussianBlur(image, (3, 3), 0)
+    image_medianBlur = cv.medianBlur(image, 3)
+    image_pyrMeanShift = cv.pyrMeanShiftFiltering(image, 15, 30, termcrit=(cv.TERM_CRITERIA_MAX_ITER + cv.TERM_CRITERIA_EPS, 5, 1))
+    image_canny = canny_demo(image)
+    cv.imshow("meanshift", image_pyrMeanShift)
+    k = np.ones((3, 3), dtype=np.uint8)
+    image_morphologyEX = cv.morphologyEx(image_canny, cv.MORPH_DILATE, k)
+    contours, hierarchy = cv.findContours(image_morphologyEX, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    for i in range(len(contours)):
+        area = cv.contourArea(contours[i])
+        arclen = cv.arcLength(contours[i], True)
+        if area < 100 or arclen < 100:
+            continue
+        rect = cv.minAreaRect(contours[i])
+        cx, cy = rect[0]
+        box = cv.boxPoints(rect)
+        box = np.int0(box)
+        cv.drawContours(image, [box], 0, (0, 255, 0), 2, 8)
+        cv.circle(image, (np.int32(cx), np.int32(cy)), 2, (255, 0, 0), 2, 8, 0)
+    cv.imshow("image_rectangle", image)
